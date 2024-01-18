@@ -1,0 +1,24 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZB10_PROGRAMALV
+*&---------------------------------------------------------------------*
+
+DATA: GO_DOCKING TYPE REF TO CL_GUI_DOCKING_CONTAINER,
+      GO_GRID    TYPE REF TO CL_GUI_ALV_GRID.
+
+* EVENT HANDLER CLASS
+CLASS LCL_EVENT_HANDLER DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      ON_DOUBLE_CLICK FOR EVENT DOUBLE_CLICK
+                      OF CL_GUI_ALV_GRID
+                      IMPORTING ES_ROW_NO E_COLUMN.
+
+ENDCLASS.
+CLASS LCL_EVENT_HANDLER IMPLEMENTATION.
+  METHOD ON_DOUBLE_CLICK.
+*    READ TABLE GT_SFLIGHT INTO GW_SFLIGHT INDEX ES_ROW_NO.
+
+  ENDMETHOD.
+
+
+ENDCLASS.
