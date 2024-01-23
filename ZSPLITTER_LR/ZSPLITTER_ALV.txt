@@ -1,0 +1,33 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZSPLIT_CONTAINERALV
+*&---------------------------------------------------------------------*
+
+DATA:
+      GO_CONTAINER TYPE REF TO CL_GUI_DOCKING_CONTAINER,
+      GO_SPLIT     TYPE REF TO CL_GUI_SPLITTER_CONTAINER,
+      GO_CONT_L    TYPE REF TO CL_GUI_CONTAINER,
+      GO_CONT_R    TYPE REF TO CL_GUI_CONTAINER,
+
+      GO_GRID_L    TYPE REF TO CL_GUI_ALV_GRID,
+      GO_GRID_R    TYPE REF TO CL_GUI_ALV_GRID.
+
+
+CLASS LCL_EVENT_RECEIVER DEFINITION.
+  PUBLIC SECTION.
+    METHODS: DOUBLE_CLICK FOR EVENT DOUBLE_CLICK OF CL_GUI_ALV_GRID
+                          IMPORTING E_ROW E_COLUMN
+                                    ES_ROW_NO.
+
+" HOTSPOT 이용할 경우
+*             HOTSPOT_CLICK FOR EVENT HOTSPOT_CLICK OF CL_GUI_ALV_GRID
+*                           IMPORTING E_ROW_ID E_COLUMN_ID
+*                                     ES_ROW_NO.
+ENDCLASS.
+
+CLASS LCL_EVENT_RECEIVER IMPLEMENTATION.
+  METHOD: DOUBLE_CLICK.
+
+    PERFORM GET_SPFLI USING E_ROW E_COLUMN ES_ROW_NO.
+
+  ENDMETHOD.
+ENDCLASS.

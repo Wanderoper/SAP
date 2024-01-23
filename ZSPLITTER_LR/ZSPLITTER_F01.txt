@@ -1,0 +1,524 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZSPLIT_CONTAINERF01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  GET_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM GET_DATA .
+
+  " SCARR
+  SELECT CARRID CARRNAME
+    FROM SCARR
+    INTO CORRESPONDING FIELDS OF TABLE GT_SCARR.
+
+  IF GT_SCARR IS INITIAL.
+    MESSAGE E001 WITH 'Data acquisition error occurred'(E01).
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_TABLE_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_TABLE_L USING PS_LAYOUT_L TYPE LVC_S_LAYO
+                       PT_FLDCAT_L TYPE LVC_T_FCAT.
+
+" 5-1. GRID_L BOUND HERE
+CHECK GO_GRID_L IS NOT BOUND.
+
+    CREATE OBJECT GO_GRID_L
+      EXPORTING
+*        I_SHELLSTYLE      = 0
+*        I_LIFETIME        =
+        I_PARENT          = GO_CONT_L
+*        I_APPL_EVENTS     = space
+*        I_PARENTDBG       =
+*        I_APPLOGPARENT    =
+*        I_GRAPHICSPARENT  =
+*        I_NAME            =
+*        I_FCAT_COMPLETE   = SPACE
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        others            = 5
+        .
+    IF SY-SUBRC <> 0.
+     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+" 5-2. GRID_L DISPLAY HERE
+CALL METHOD GO_GRID_L->SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+*      I_BUFFER_ACTIVE               =
+*      I_BYPASSING_BUFFER            =
+*      I_CONSISTENCY_CHECK           =
+      I_STRUCTURE_NAME              = 'SCARR'
+*      IS_VARIANT                    =
+*      I_SAVE                        =
+*      I_DEFAULT                     = 'X'
+      IS_LAYOUT                     = PS_LAYOUT_L
+*      IS_PRINT                      =
+*      IT_SPECIAL_GROUPS             =
+*      IT_TOOLBAR_EXCLUDING          =
+*      IT_HYPERLINK                  =
+*      IT_ALV_GRAPHICS               =
+*      IT_EXCEPT_QINFO               =
+*      IR_SALV_ADAPTER               =
+    CHANGING
+      IT_OUTTAB                     = GT_SCARR
+      IT_FIELDCATALOG               = PT_FLDCAT_L
+*      IT_SORT                       =
+*      IT_FILTER                     =
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      others                        = 4
+          .
+  IF SY-SUBRC <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_TABLE_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_TABLE_R USING PS_LAYOUT_R TYPE LVC_S_LAYO
+                       PT_FLDCAT_R TYPE LVC_T_FCAT.
+  " 5-3. GO_GRID_R BOUND HERE
+  CHECK GO_GRID_R IS NOT BOUND.
+
+    CREATE OBJECT GO_GRID_R
+      EXPORTING
+*        I_SHELLSTYLE      = 0
+*        I_LIFETIME        =
+        I_PARENT          = GO_CONT_R
+*        I_APPL_EVENTS     = space
+*        I_PARENTDBG       =
+*        I_APPLOGPARENT    =
+*        I_GRAPHICSPARENT  =
+*        I_NAME            =
+*        I_FCAT_COMPLETE   = SPACE
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        others            = 5
+        .
+    IF SY-SUBRC <> 0.
+     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+
+  " 5-4. GO_GRID_R DISPLAY HERE
+  CALL METHOD GO_GRID_R->SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+*      I_BUFFER_ACTIVE               =
+*      I_BYPASSING_BUFFER            =
+*      I_CONSISTENCY_CHECK           =
+      I_STRUCTURE_NAME              = 'SPFLI'
+*      IS_VARIANT                    =
+*      I_SAVE                        =
+*      I_DEFAULT                     = 'X'
+      IS_LAYOUT                     = PS_LAYOUT_R
+*      IS_PRINT                      =
+*      IT_SPECIAL_GROUPS             =
+*      IT_TOOLBAR_EXCLUDING          =
+*      IT_HYPERLINK                  =
+*      IT_ALV_GRAPHICS               =
+*      IT_EXCEPT_QINFO               =
+*      IR_SALV_ADAPTER               =
+    CHANGING
+      IT_OUTTAB                     = GT_SPFLI
+      IT_FIELDCATALOG               = PT_FLDCAT_R
+*      IT_SORT                       =
+*      IT_FILTER                     =
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      others                        = 4
+          .
+  IF SY-SUBRC <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_LAYOUT_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LS_LAYOUT_L  text
+*----------------------------------------------------------------------*
+FORM SET_LAYOUT_L  USING PS_LAYOUT_L TYPE LVC_S_LAYO.
+
+  PS_LAYOUT_L-ZEBRA      = 'X'.
+  PS_LAYOUT_L-CWIDTH_OPT = 'X'.
+  PS_LAYOUT_L-NO_TOOLBAR = 'X'.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_SORT_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LT_SORT_L  text
+*----------------------------------------------------------------------*
+FORM SET_SORT_L  USING PT_SORT_L TYPE LVC_T_SORT.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_FIELDCAT_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LT_FLDCAT_L  text
+*----------------------------------------------------------------------*
+FORM SET_FIELDCAT_L  USING PT_FLDCAT_L TYPE LVC_T_FCAT.
+
+*  FIELD-SYMBOLS: <FS_FCAT> TYPE lvc_s_fcat.
+*
+*  LOOP AT PT_FLDCAT_L ASSIGNING <FS_FCAT>.
+*    CASE <FS_FCAT>-FIELDNAME.
+*      WHEN 'CARRID'.
+**        CLEAR <FS_FCAT>.
+*        <FS_FCAT>-COL_POS    = 1     . " CARRID
+*        <FS_FCAT>-KEY        = 'X'.
+*        <FS_FCAT>-FIELDNAME  = 'CARRID' .
+*        <FS_FCAT>-F4AVAILABL = 'X'.
+*        <FS_FCAT>-REF_TABLE  = 'SCARR'.
+*        <FS_FCAT>-REF_FIELD  = 'CARRID'.
+*        <FS_FCAT>-COLTEXT    = 'CA'(F01).
+*        APPEND <FS_FCAT> TO PT_FLDCAT_L.
+*      WHEN 'CARRNAME'.
+**        CLEAR <FS_FCAT>.
+*        <FS_FCAT>-COL_POS    = 2     . " CARRNAME
+*        <FS_FCAT>-KEY        = 'X'.
+*        <FS_FCAT>-FIELDNAME  = 'CARRNAME' .
+*        <FS_FCAT>-F4AVAILABL = 'X'.
+*        <FS_FCAT>-REF_TABLE  = 'SCARR'.
+*        <FS_FCAT>-REF_FIELD  = 'CARRNAME'.
+*        <FS_FCAT>-COLTEXT    = 'Name'(F02).
+*        APPEND <FS_FCAT> TO PT_FLDCAT_L.
+*      WHEN OTHERS.
+**        CLEAR <FS_FCAT>.
+*        <FS_FCAT>-NO_OUT     = 'X'.
+*        APPEND <FS_FCAT> TO PT_FLDCAT_L.
+*
+*    ENDCASE.
+
+*  ENDLOOP.
+  DATA: PS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 1     . " CARRID
+  PS_FCAT-KEY        = 'X'.
+  PS_FCAT-FIELDNAME  = 'CARRID' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SCARR'.
+  PS_FCAT-REF_FIELD  = 'CARRID'.
+  PS_FCAT-COLTEXT    = 'CA'(F01).
+  APPEND PS_FCAT TO PT_FLDCAT_L  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 2     . " CARRNAME
+  PS_FCAT-FIELDNAME  = 'CARRNAME' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SCARR'.
+  PS_FCAT-REF_FIELD  = 'CARRNAME'.
+  PS_FCAT-COLTEXT    = 'Name'(F02).
+  APPEND PS_FCAT TO PT_FLDCAT_L  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 3     . " CURRCODE
+  PS_FCAT-FIELDNAME  = 'CURRCODE' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_L  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 2     . " URL
+  PS_FCAT-FIELDNAME  = 'URL' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_L  .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_EVENT_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_EVENT_L .
+
+  DATA: GO_HANDLER_L TYPE REF TO LCL_EVENT_RECEIVER.
+  CREATE OBJECT GO_HANDLER_L.
+
+  SET HANDLER: GO_HANDLER_L->DOUBLE_CLICK  FOR GO_GRID_L.
+*               GO_HANDLER_L->HOTSPOT_CLICK FOR GO_GRID_L.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_TOTAL_L
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_TOTAL_L .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_LAYOUT_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LS_LAYOUT_R  text
+*----------------------------------------------------------------------*
+FORM SET_LAYOUT_R  USING PS_LAYOUT_R TYPE LVC_S_LAYO.
+  PS_LAYOUT_R-ZEBRA      = 'X'.
+  PS_LAYOUT_R-CWIDTH_OPT = 'X'.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_SORT_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LT_SORT_R  text
+*----------------------------------------------------------------------*
+FORM SET_SORT_R  USING PT_SORT_R TYPE LVC_T_SORT.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_FIELDCAT_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LT_FLDCAT_R  text
+*----------------------------------------------------------------------*
+FORM SET_FIELDCAT_R  USING PT_FLDCAT_R TYPE LVC_T_FCAT.
+
+  DATA: PS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 1     . " CONNID
+  PS_FCAT-KEY        = 'X'.
+  PS_FCAT-FIELDNAME  = 'CONNID' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'CONNID'.
+  PS_FCAT-COLTEXT    = 'Connection'(F21).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 2     . " COUNTRYFR
+  PS_FCAT-FIELDNAME  = 'COUNTRYFR' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'CONNID'.
+  PS_FCAT-COLTEXT    = 'Country From'(F22).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 3     . " COUNTRYTO
+  PS_FCAT-FIELDNAME  = 'COUNTRYTO' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'COUNTRYTO'.
+  PS_FCAT-COLTEXT    = 'Country To'(F23).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 4     . " CITYFROM
+  PS_FCAT-FIELDNAME  = 'CITYFROM' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'CITYFROM'.
+  PS_FCAT-COLTEXT    = 'City From'(F24).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 5     . " CITYTO
+  PS_FCAT-FIELDNAME  = 'CITYTO' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'CITYTO'.
+  PS_FCAT-COLTEXT    = 'City To'(F25).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 6     . " DISTANCE
+  PS_FCAT-FIELDNAME  = 'DISTANCE' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'DISTANCE'.
+  PS_FCAT-COLTEXT    = 'Distance'(F26).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT.
+  PS_FCAT-COL_POS    = 7     . " DISTID
+  PS_FCAT-FIELDNAME  = 'DISTID' .
+  PS_FCAT-F4AVAILABL = 'X'.
+  PS_FCAT-REF_TABLE  = 'SPFLI'.
+  PS_FCAT-REF_FIELD  = 'DISTID'.
+  PS_FCAT-COLTEXT    = 'Unit'(F27).
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'AIRPFROM' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'AIRPTO' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'FLTIME' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'DEPTIME' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'ARRTIME' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'FLTYPE' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'PERIOD' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'CARRID' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+  CLEAR PS_FCAT. " DISTID
+  PS_FCAT-FIELDNAME  = 'DISTANCE2' .
+  PS_FCAT-NO_OUT     = 'X'.
+  APPEND PS_FCAT TO PT_FLDCAT_R  .
+
+
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_EVENT_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_EVENT_R .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SET_TOTAL_R
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SET_TOTAL_R .
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  GET_SFLIGHT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_E_ROW  text
+*      -->P_E_COLUMN  text
+*      -->P_ES_ROW_NO  text
+*----------------------------------------------------------------------*
+FORM GET_SPFLI  USING    P_ROW    TYPE LVC_S_ROW
+                           P_COLUMN TYPE LVC_S_COL
+                           P_ROW_NO TYPE LVC_S_ROID.
+
+  CLEAR GS_SCARR.
+
+  READ TABLE GT_SCARR INTO GS_SCARR INDEX P_ROW_NO-ROW_ID.
+
+  SELECT *
+    FROM SPFLI
+    INTO CORRESPONDING FIELDS OF TABLE GT_SPFLI
+   WHERE CARRID = GS_SCARR-CARRID.
+
+  IF GT_SPFLI IS INITIAL.
+    MESSAGE I001 WITH 'No data found!'(I01).
+  ELSE.
+    PERFORM REFRESH_DATA.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  REFRESH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM REFRESH_DATA .
+
+  CALL METHOD GO_GRID_L->REFRESH_TABLE_DISPLAY
+    EXPORTING
+*      IS_STABLE      =
+      I_SOFT_REFRESH = 'X'
+    EXCEPTIONS
+      FINISHED       = 1
+      others         = 2
+          .
+  IF SY-SUBRC <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+
+  CALL METHOD GO_GRID_R->REFRESH_TABLE_DISPLAY
+    EXPORTING
+*      IS_STABLE      =
+      I_SOFT_REFRESH = 'X'
+    EXCEPTIONS
+      FINISHED       = 1
+      others         = 2
+          .
+  IF SY-SUBRC <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+
+
+ENDFORM.

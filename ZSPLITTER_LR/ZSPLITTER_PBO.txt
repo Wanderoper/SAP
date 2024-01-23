@@ -1,0 +1,162 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZSPLIT_CONTAINERO01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'G0100'.
+
+*  IF GT_SCARR IS NOT INITIAL.
+*
+*  ELSEIF.
+*  ENDIF.
+*  DATA(GV_CNT) = LINES( GT_SCARR ).
+  SET TITLEBAR 'T0100' WITH 'Flight Connection'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  INIT_CONTROLS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE INIT_CONTROLS OUTPUT.
+
+  " 1.SET CONTAINER
+  CHECK GO_CONTAINER IS NOT BOUND.
+    CREATE OBJECT GO_CONTAINER
+      EXPORTING
+*        PARENT                      =
+*        REPID                       =
+*        DYNNR                       =
+*        SIDE                        = DOCK_AT_LEFT
+        EXTENSION                   = 3600
+*        STYLE                       =
+*        LIFETIME                    = lifetime_default
+*        CAPTION                     =
+*        METRIC                      = 0
+*        RATIO                       =
+*        NO_AUTODEF_PROGID_DYNNR     =
+*        NAME                        =
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        others                      = 6
+        .
+    IF SY-SUBRC <> 0.
+     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+
+  " 2.SET SPLITTER ON CONTAINER
+  CHECK GO_SPLIT IS NOT BOUND.
+
+    CREATE OBJECT GO_SPLIT
+      EXPORTING
+        LINK_DYNNR        = SY-DYNNR
+        LINK_REPID        = SY-REPID
+*        SHELLSTYLE        =
+*        LEFT              =
+*        TOP               =
+*        WIDTH             =
+*        HEIGHT            =
+*        METRIC            = cntl_metric_dynpro
+*        ALIGN             = 15
+        PARENT            = GO_CONTAINER
+        ROWS              = 1
+        COLUMNS           = 2
+*        NO_AUTODEF_PROGID_DYNNR =
+*        NAME              =
+      EXCEPTIONS
+        CNTL_ERROR        = 1
+        CNTL_SYSTEM_ERROR = 2
+        others            = 3
+        .
+    IF SY-SUBRC <> 0.
+     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+    " FIXING
+    CALL METHOD GO_SPLIT->SET_COLUMN_SASH
+      EXPORTING
+        ID                = 1
+        TYPE              = 0
+        VALUE             = 0
+*      IMPORTING
+*        RESULT            =
+      EXCEPTIONS
+        CNTL_ERROR        = 1
+        CNTL_SYSTEM_ERROR = 2
+        others            = 3
+            .
+    IF SY-SUBRC <> 0.
+*     Implement suitable error handling here
+    ENDIF.
+
+
+  " 3.SPLITTER GETS CONTAINER (LEFT)
+    CALL METHOD GO_SPLIT->GET_CONTAINER
+      EXPORTING
+        ROW       = 1
+        COLUMN    = 1
+      RECEIVING
+        CONTAINER = GO_CONT_L
+        .
+
+  " 4.SPLITTER GETS CONTAINER (RIGHT)
+    CALL METHOD GO_SPLIT->GET_CONTAINER
+      EXPORTING
+        ROW       = 1
+        COLUMN    = 2
+      RECEIVING
+        CONTAINER = GO_CONT_R
+        .
+
+  " 5. SET COLUMN WIDTH
+    CALL METHOD GO_SPLIT->SET_COLUMN_WIDTH
+      EXPORTING
+        ID                = 1
+        WIDTH             = 13
+*      IMPORTING
+*        RESULT            =
+      EXCEPTIONS
+        CNTL_ERROR        = 1
+        CNTL_SYSTEM_ERROR = 2
+        others            = 3
+            .
+
+    IF SY-SUBRC <> 0.
+     " Implement suitable error handling here
+    ENDIF.
+
+  " 5. CREATE EACH TO CONTAINER ON SPLITTER
+  DATA: LS_LAYOUT_L       TYPE LVC_S_LAYO,
+        LS_LAYOUT_R       TYPE LVC_S_LAYO,
+        LT_SORT_L         TYPE LVC_T_SORT,
+        LT_SORT_R         TYPE LVC_T_SORT,
+        LT_FLDCAT_L       TYPE LVC_T_FCAT,
+        LT_FLDCAT_R       TYPE LVC_T_FCAT.
+
+*----------------------------------------------------------------------*
+  " SET TABLE FOR "L"
+  PERFORM:
+        SET_LAYOUT_L      USING LS_LAYOUT_L,
+        SET_FIELDCAT_L    USING LT_FLDCAT_L,
+        SET_TABLE_L       USING LS_LAYOUT_L LT_FLDCAT_L,
+        SET_EVENT_L.
+
+*----------------------------------------------------------------------*
+  " SET TABLE FOR "R"
+  PERFORM:
+        SET_LAYOUT_R      USING LS_LAYOUT_R,
+        SET_FIELDCAT_R    USING LT_FLDCAT_R,
+        SET_TABLE_R       USING LS_LAYOUT_R LT_FLDCAT_R,
+        SET_EVENT_R.
+
+ENDMODULE.

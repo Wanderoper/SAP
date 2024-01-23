@@ -1,0 +1,23 @@
+*&---------------------------------------------------------------------*
+*& Module Pool       ZSPLIT_CONTAINER_39_SFLIGHT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+PROGRAM ZSPLIT_CONTAINER_39_SFLIGHT MESSAGE-ID ZT39_MSG01.
+" 상단 항공사 : ALV
+" 하단 항공편 상세 : ALV
+" 회계 전표에 대한 라인아이템 으로 응용 가능
+
+INCLUDE ZSPLIT_CONTAINERTOP                     .  " global Data
+INCLUDE ZSPLIT_CONTAINERALV                     .  " ALV
+INCLUDE ZSPLIT_CONTAINERO01                     .  " PBO-Modules
+INCLUDE ZSPLIT_CONTAINERI01                     .  " PAI-Modules
+INCLUDE ZSPLIT_CONTAINERF01                     .  " FORM-Routines
+
+START-OF-SELECTION.
+  PERFORM GET_DATA.
+
+END-OF-SELECTION.
+  CALL SCREEN 0100.
