@@ -1,0 +1,105 @@
+*&---------------------------------------------------------------------*
+*& Report ZEXCEL_UPLOAD_39
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZEXCEL_UPLOAD_39.
+
+" PF-STATUS O, set status O
+
+INCLUDE ZEXCEL_39TOP.
+INCLUDE ZEXCEL_39ALV.
+INCLUDE ZEXCEL_39O01.
+INCLUDE ZEXCEL_39I01.
+INCLUDE ZEXCEL_39F01.
+
+INITIALIZATION.
+" GT_FILE에 어떤 엑셀파일이 들어있는지 들어온다
+
+AT SELECTION-SCREEN OUTPUT.
+  SET PF-STATUS 'S1000'. " at selection screen에서 처리
+
+AT SELECTION-SCREEN.
+  CASE SSCRFIELDS-UCOMM.
+    WHEN 'EXECUTE'.
+      PERFORM GET_FROMEXL.
+      CALL SCREEN 0100.
+
+    WHEN 'EXCEL'.
+      SELECT SINGLE *
+        FROM WWWDATA
+        INTO CORRESPONDING FIELDS OF GS_MIME
+       WHERE OBJID = 'ZEXCL_39_TS1'. " UPLOADED EXCEL FILE IN MIME
+
+      " SET THE PATH TO SAVE IN LOCAL PC.
+      CALL METHOD CL_GUI_FRONTEND_SERVICES=>FILE_SAVE_DIALOG
+        EXPORTING
+          DEFAULT_FILE_NAME         = 'Test Template 0102'
+          FILE_FILTER               = 'Excel files (*.xlsx)|*.xls'
+*          INITIAL_DIRECTORY         = C:\
+        CHANGING
+          FILENAME                  = GV_FILENAME
+          PATH                      = GV_PATH
+          FULLPATH                  = GV_FULLPATH
+        EXCEPTIONS
+          CNTL_ERROR                = 1
+          ERROR_NO_GUI              = 2
+          NOT_SUPPORTED_BY_GUI      = 3
+          INVALID_DEFAULT_FILE_NAME = 4
+          others                    = 5
+              .
+      IF SY-SUBRC <> 0.
+*       Implement suitable error handling here
+      ENDIF.
+
+      GV_DOWNPATH = GV_FULLPATH. " WEB_OBJECT FUNC을 위한 형변환
+
+      CALL FUNCTION 'DOWNLOAD_WEB_OBJECT'
+        EXPORTING
+          KEY               = GS_MIME
+         DESTINATION        = GV_DOWNPATH
+        IMPORTING
+          RC                = GV_RC.
+
+      MESSAGE 'Template downloaded' TYPE 'I'.
+
+      CHECK GV_RC = 0.
+
+      CALL METHOD CL_GUI_FRONTEND_SERVICES=>EXECUTE
+        EXPORTING
+          DOCUMENT               = GV_FULLPATH
+*          APPLICATION            =
+*          PARAMETER              =
+*          DEFAULT_DIRECTORY      =
+*          MAXIMIZED              =
+*          MINIMIZED              =
+*          SYNCHRONOUS            =
+          OPERATION              = 'OPEN'
+        EXCEPTIONS
+          CNTL_ERROR             = 1
+          ERROR_NO_GUI           = 2
+          BAD_PARAMETER          = 3
+          FILE_NOT_FOUND         = 4
+          PATH_NOT_FOUND         = 5
+          FILE_EXTENSION_UNKNOWN = 6
+          ERROR_EXECUTE_FAILED   = 7
+          SYNCHRONOUS_FAILED     = 8
+          NOT_SUPPORTED_BY_GUI   = 9
+          others                 = 10
+              .
+      IF SY-SUBRC <> 0.
+*       Implement suitable error handling here
+      ENDIF.
+  ENDCASE.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR P_FILE. " 서치헬프 코딩으로 달기
+  PERFORM OPEN_FILE.
+
+*START-OF-SELECTION.
+*  CASE SSCRFIELDS-UCOMM.
+*    WHEN 'EXECUTE'.
+*      PERFORM GET_FROMEXL.
+*  ENDCASE.
+*
+*END-OF-SELECTION.
+*  CALL SCREEN 0100.

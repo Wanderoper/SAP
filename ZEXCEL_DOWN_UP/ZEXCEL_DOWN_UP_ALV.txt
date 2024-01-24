@@ -1,0 +1,15 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZEXCEL_39ALV
+*&---------------------------------------------------------------------*
+
+DATA: go_cont  TYPE REF TO cl_gui_custom_container.  "부모.
+DATA: go_split TYPE REF TO cl_gui_splitter_container."자식.
+
+" header 사용 (splitter)을 위한 splitter 이용
+DATA: REF_CONT   TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      REF_SPLIT  TYPE REF TO CL_GUI_SPLITTER_CONTAINER,
+      REF_TOP    TYPE REF TO CL_GUI_CONTAINER,
+      REF_BOTTOM TYPE REF TO CL_GUI_CONTAINER.
+
+DATA: GO_GRID_TOP TYPE REF TO CL_GUI_ALV_GRID,
+      GO_GRID_BOT TYPE REF TO CL_GUI_ALV_GRID.

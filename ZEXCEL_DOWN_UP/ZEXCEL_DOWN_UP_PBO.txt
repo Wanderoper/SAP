@@ -1,0 +1,140 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZEXCEL_39O01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'G0100'.
+  SET TITLEBAR 'T0100' WITH 'EXCEL UPLOAD'.
+ENDMODULE.
+
+*&---------------------------------------------------------------------*
+*&      Module  INIT_CONTROLS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE INIT_CONTROLS OUTPUT.
+
+  CHECK GO_CONT IS INITIAL. " CHECK === IF STATEMENT
+
+  CREATE OBJECT GO_CONT " 부모 컨테이너 생성
+    EXPORTING
+      CONTAINER_NAME              = 'REF_CONT'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      others                      = 6
+      .
+  IF SY-SUBRC <> 0.
+   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+              WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+
+*  CHECK GO_SPLIT IS INITIAL.
+
+  CREATE OBJECT GO_SPLIT
+    EXPORTING
+*      LINK_DYNNR        =
+*      LINK_REPID        =
+*      SHELLSTYLE        =
+*      LEFT              =
+*      TOP               =
+*      WIDTH             =
+*      HEIGHT            =
+*      METRIC            = cntl_metric_dynpro
+*      ALIGN             = 15
+      PARENT            = GO_CONT
+      ROWS              = 2
+      COLUMNS           = 1
+*      NO_AUTODEF_PROGID_DYNNR =
+*      NAME              =
+    EXCEPTIONS
+      CNTL_ERROR        = 1
+      CNTL_SYSTEM_ERROR = 2
+      others            = 3
+      .
+  IF SY-SUBRC <> 0.
+   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+              WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+
+  go_split->set_row_height( id = 1 height = 10 ). "ID = 1 첫번째행을...
+
+*  IF REF_CONT IS NOT BOUND.
+*    CREATE OBJECT REF_CONT
+*      EXPORTING
+*        CONTAINER_NAME              = 'REF_CONT'
+*      EXCEPTIONS
+*        CNTL_ERROR                  = 1
+*        CNTL_SYSTEM_ERROR           = 2
+*        CREATE_ERROR                = 3
+*        LIFETIME_ERROR              = 4
+*        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+*        others                      = 6
+*        .
+*    IF SY-SUBRC <> 0.
+*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+*    ENDIF.
+*
+*    CREATE OBJECT REF_SPLIT
+*      EXPORTING
+*        PARENT            = REF_CONT " 2X1 로 배치한다
+*        ROWS              = 2
+*        COLUMNS           = 1
+*      EXCEPTIONS
+*        CNTL_ERROR        = 1
+*        CNTL_SYSTEM_ERROR = 2
+*        others            = 3
+*        .
+*    IF SY-SUBRC <> 0.
+*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+*    ENDIF.
+*
+*    REF_SPLIT->SET_ROW_HEIGHT( ID = 1 HEIGHT = 30 ).
+
+" ** 중요 **
+" 1. 먼저 그리드를 Instantiate 한 뒤 
+" 2. Get_container 메서드로 Splitter에 각각 올려준다 
+" *********
+
+   PERFORM REF_TOP.
+   PERFORM REF_BOT.
+
+    IF P_FIXED IS NOT INITIAL.
+      CALL METHOD GO_SPLIT->SET_ROW_SASH
+        EXPORTING
+          ID                = 1
+          TYPE              = 0 " 움직임 가능여부
+          VALUE             = 0 " FALSE
+              .
+      CALL METHOD GO_SPLIT->GET_CONTAINER
+        EXPORTING
+          ROW               = 1
+          COLUMN            = 1
+        RECEIVING
+          CONTAINER         = REF_TOP.
+
+      CALL METHOD GO_SPLIT->GET_CONTAINER
+        EXPORTING
+          ROW               = 2
+          COLUMN            = 1
+        RECEIVING
+          CONTAINER         = REF_BOTTOM.
+
+    ENDIF.
+
+*
+*  ENDIF.
+
+
+
+
+ENDMODULE.

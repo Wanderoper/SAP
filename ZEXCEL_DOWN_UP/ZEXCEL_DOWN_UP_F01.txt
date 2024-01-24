@@ -1,0 +1,317 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZEXCEL_39F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  OPEN_FILE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM OPEN_FILE .
+  CALL METHOD CL_GUI_FRONTEND_SERVICES=>FILE_OPEN_DIALOG
+    EXPORTING
+      DEFAULT_FILENAME        = '*.xls;*.XLS;*.xlsx;*.XLSX;*.txt;*.TXT;'
+      INITIAL_DIRECTORY       = 'C:\'
+    CHANGING
+      FILE_TABLE              = GT_FILE " 사용자가 선택한 파일 경로 + 이름이 여기에 들어감.
+      RC                      = GV_RC " RETURN CALL
+    EXCEPTIONS
+      FILE_OPEN_DIALOG_FAILED = 1
+      CNTL_ERROR              = 2
+      ERROR_NO_GUI            = 3
+      NOT_SUPPORTED_BY_GUI    = 4
+      others                  = 5
+          .
+  IF SY-SUBRC = 0.
+    CLEAR: GW_DATA.
+    READ TABLE GT_FILE INTO GW_FILE INDEX 1. " GW_DATA 선언없이 INTO DATA(GW_DATA)가능 BUT 좋지않은 방법
+    P_FILE = GW_FILE-FILENAME.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  GET_FROMEXL
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM GET_FROMEXL .
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      FILENAME                      = P_FILE
+      I_BEGIN_COL                   = 1
+      I_BEGIN_ROW                   = 2
+      I_END_COL                     = 256
+      I_END_ROW                     = 65000
+    TABLES
+      INTERN                        = GT_INTERN " 세로로 쌓여져 있는 데이터를 가로로 바꿔야함
+   EXCEPTIONS
+     INCONSISTENT_PARAMETERS       = 1
+     UPLOAD_OLE                    = 2
+     OTHERS                        = 3
+            .
+  IF SY-SUBRC <> 0.
+    "ERROR HANDLING.
+  ELSEIF SY-SUBRC = 0.
+    " SUCCESS
+    LOOP AT GT_INTERN INTO GS_INTERN. " GT_INTERN 안에는 COLUMN 방향으로 데이터가 들어있음
+      " 컬럼으로 쌓인 데이터 -> ROW 로 변경하는 로직
+      ASSIGN COMPONENT GS_INTERN-COL OF STRUCTURE GW_DATA TO <FS_COMP>.
+      <FS_COMP> = GS_INTERN-VALUE.
+
+      AT END OF ROW.
+        APPEND GW_DATA TO GT_DATA.
+      ENDAT.
+    ENDLOOP.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CREATE_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+*FORM CREATE_ALV .
+*  IF REF_CONT IS NOT BOUND.
+*
+*
+*  ENDIF.
+*
+*ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  REF_TOP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM REF_TOP .
+IF REF_TOP IS NOT BOUND.
+     CREATE OBJECT REF_TOP
+       EXPORTING
+         CLSID                          = ''
+*         PARENT                         =
+*         STYLE                          =
+*         DYNNR                          =
+*         REPID                          =
+*         CONTAINER_NAME                 =
+*         LIFETIME                       = lifetime_default
+*         AUTOALIGN                      =
+*         NO_AUTODEF_PROGID_DYNNR        =
+*         NAME                           =
+       EXCEPTIONS
+         CNTL_ERROR                     = 1
+         CNTL_SYSTEM_ERROR              = 2
+         CREATE_ERROR                   = 3
+         LIFETIME_ERROR                 = 4
+         LIFETIME_DYNPRO_DYNPRO_LINK    = 5
+         LIFETIME_DYNPRO_ILLEGAL_PARENT = 6
+         others                         = 7
+         .
+     IF SY-SUBRC <> 0.
+      MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                 WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+     ENDIF.
+
+   ENDIF.
+
+   IF GO_GRID_TOP IS NOT BOUND.
+     CREATE OBJECT GO_GRID_TOP
+       EXPORTING
+*         I_SHELLSTYLE      = 0
+*         I_LIFETIME        =
+         I_PARENT          = REF_TOP
+*         I_APPL_EVENTS     = space
+*         I_PARENTDBG       =
+*         I_APPLOGPARENT    =
+*         I_GRAPHICSPARENT  =
+*         I_NAME            =
+*         I_FCAT_COMPLETE   = SPACE
+       EXCEPTIONS
+         ERROR_CNTL_CREATE = 1
+         ERROR_CNTL_INIT   = 2
+         ERROR_CNTL_LINK   = 3
+         ERROR_DP_CREATE   = 4
+         others            = 5
+         .
+     IF SY-SUBRC <> 0.
+      MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                 WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+     ENDIF.
+
+     CALL METHOD GO_GRID_TOP->SET_TABLE_FOR_FIRST_DISPLAY
+       EXPORTING
+*         I_BUFFER_ACTIVE               =
+*         I_BYPASSING_BUFFER            =
+*         I_CONSISTENCY_CHECK           =
+*         I_STRUCTURE_NAME              = GW_DATA
+*         IS_VARIANT                    =
+*         I_SAVE                        =
+         I_DEFAULT                     = 'X'
+*         IS_LAYOUT                     =
+*         IS_PRINT                      =
+*         IT_SPECIAL_GROUPS             =
+*         IT_TOOLBAR_EXCLUDING          =
+*         IT_HYPERLINK                  =
+*         IT_ALV_GRAPHICS               =
+*         IT_EXCEPT_QINFO               =
+*         IR_SALV_ADAPTER               =
+       CHANGING
+         IT_OUTTAB                     = GT_DATA[]
+*         IT_FIELDCATALOG               =
+*         IT_SORT                       =
+*         IT_FILTER                     =
+       EXCEPTIONS
+         INVALID_PARAMETER_COMBINATION = 1
+         PROGRAM_ERROR                 = 2
+         TOO_MANY_LINES                = 3
+         others                        = 4
+             .
+     IF SY-SUBRC <> 0.
+      " Implement suitable error handling here
+     ENDIF.
+
+     CALL METHOD GO_GRID_TOP->SET_TABLE_FOR_FIRST_DISPLAY
+       EXPORTING
+*         I_BUFFER_ACTIVE               =
+*         I_BYPASSING_BUFFER            =
+*         I_CONSISTENCY_CHECK           =
+*         I_STRUCTURE_NAME              = GW_DATA
+*         IS_VARIANT                    =
+*         I_SAVE                        =
+         I_DEFAULT                     = 'X'
+*         IS_LAYOUT                     =
+*         IS_PRINT                      =
+*         IT_SPECIAL_GROUPS             =
+*         IT_TOOLBAR_EXCLUDING          =
+*         IT_HYPERLINK                  =
+*         IT_ALV_GRAPHICS               =
+*         IT_EXCEPT_QINFO               =
+*         IR_SALV_ADAPTER               =
+       CHANGING
+         IT_OUTTAB                     = GT_DATA[]
+*         IT_FIELDCATALOG               =
+*         IT_SORT                       =
+*         IT_FILTER                     =
+       EXCEPTIONS
+         INVALID_PARAMETER_COMBINATION = 1
+         PROGRAM_ERROR                 = 2
+         TOO_MANY_LINES                = 3
+         others                        = 4
+             .
+     IF SY-SUBRC <> 0.
+      " Implement suitable error handling here
+     ENDIF.
+
+
+
+   ENDIF.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  REF_BOT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM REF_BOT .
+
+  IF REF_BOTTOM IS NOT BOUND.
+    CREATE OBJECT REF_BOTTOM
+      EXPORTING
+        CLSID                          = ''
+*        PARENT                         =
+*        STYLE                          =
+*        DYNNR                          =
+*        REPID                          =
+*        CONTAINER_NAME                 =
+*        LIFETIME                       = lifetime_default
+*        AUTOALIGN                      =
+*        NO_AUTODEF_PROGID_DYNNR        =
+*        NAME                           =
+      EXCEPTIONS
+        CNTL_ERROR                     = 1
+        CNTL_SYSTEM_ERROR              = 2
+        CREATE_ERROR                   = 3
+        LIFETIME_ERROR                 = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK    = 5
+        LIFETIME_DYNPRO_ILLEGAL_PARENT = 6
+        others                         = 7
+        .
+    IF SY-SUBRC <> 0.
+     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+   IF GO_GRID_BOT IS NOT BOUND.
+     CREATE OBJECT GO_GRID_BOT
+       EXPORTING
+*         I_SHELLSTYLE      = 0
+*         I_LIFETIME        =
+         I_PARENT          = REF_BOTTOM
+*         I_APPL_EVENTS     = space
+*         I_PARENTDBG       =
+*         I_APPLOGPARENT    =
+*         I_GRAPHICSPARENT  =
+*         I_NAME            =
+*         I_FCAT_COMPLETE   = SPACE
+       EXCEPTIONS
+         ERROR_CNTL_CREATE = 1
+         ERROR_CNTL_INIT   = 2
+         ERROR_CNTL_LINK   = 3
+         ERROR_DP_CREATE   = 4
+         others            = 5
+         .
+     IF SY-SUBRC <> 0.
+      MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+                 WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+     ENDIF.
+
+   ENDIF.
+
+     CALL METHOD GO_GRID_BOT->SET_TABLE_FOR_FIRST_DISPLAY
+       EXPORTING
+*         I_BUFFER_ACTIVE               =
+*         I_BYPASSING_BUFFER            =
+*         I_CONSISTENCY_CHECK           =
+*         I_STRUCTURE_NAME              = GW_DATA
+*         IS_VARIANT                    =
+*         I_SAVE                        =
+         I_DEFAULT                     = 'X'
+*         IS_LAYOUT                     =
+*         IS_PRINT                      =
+*         IT_SPECIAL_GROUPS             =
+*         IT_TOOLBAR_EXCLUDING          =
+*         IT_HYPERLINK                  =
+*         IT_ALV_GRAPHICS               =
+*         IT_EXCEPT_QINFO               =
+*         IR_SALV_ADAPTER               =
+       CHANGING
+         IT_OUTTAB                     = GT_DATA[]
+*         IT_FIELDCATALOG               =
+*         IT_SORT                       =
+*         IT_FILTER                     =
+       EXCEPTIONS
+         INVALID_PARAMETER_COMBINATION = 1
+         PROGRAM_ERROR                 = 2
+         TOO_MANY_LINES                = 3
+         others                        = 4
+             .
+     IF SY-SUBRC <> 0.
+      " Implement suitable error handling here
+     ENDIF.
+
+  ENDIF.
+
+ENDFORM.
