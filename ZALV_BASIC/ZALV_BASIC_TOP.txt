@@ -1,0 +1,18 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZALV_EX10_1TOP
+*&---------------------------------------------------------------------*
+DATA: GV_CONNID TYPE SPFLI-CONNID.
+
+PARAMETERS: PA_CARR TYPE S_CARR_ID.
+SELECT-OPTIONS : SO_CARR FOR GV_CONNID.
+
+" ### SELECT OPTIONS# #### ## ->
+
+DATA: GT_SPFLI TYPE TABLE OF SPFLI,
+      GW_SPFLI LIKE LINE OF GT_SPFLI.
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+DATA: GO_CONTAINER TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV       TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYOUT    TYPE  LVC_S_LAYO.
